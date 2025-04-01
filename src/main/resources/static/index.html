@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Booking System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Flatpickr for Date Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-car"></i> Car Booking
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#cars">Cars</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Contact</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <div class="nav-buttons" id="navButtons">
+                    <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                </div>
+                <div class="dropdown user-menu d-none" id="userMenu">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> <span id="username">User</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" id="myBookingsBtn"><i class="fas fa-list"></i> My Bookings</a></li>
+                        <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="hero-content">
+                    <h1>Rent Your Dream Car Today</h1>
+                    <p>Choose from our wide selection of vehicles for any occasion. Experience luxury, comfort, and reliability.</p>
+                    <a href="#cars" class="btn btn-primary btn-lg">Browse Cars</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Section -->
+<div class="search-section py-4 bg-light">
+    <div class="container">
+        <div class="card shadow">
+            <div class="card-body">
+                <form id="carSearchForm">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label for="brandInput" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="brandInput" placeholder="Any brand">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="priceRange" class="form-label">Max Price/Day</label>
+                            <input type="range" class="form-range" id="priceRange" min="10" max="500" step="10" value="200">
+                            <span id="priceValue">$200</span>
+                        </div>
+                        <div class="col-md-3 align-self-end">
+                            <button type="submit" class="btn btn-primary w-100">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cars Section -->
+<section id="cars" class="cars-section py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">Our Car Fleet</h2>
+        <div class="row g-4" id="carsList">
+            <!-- Cars will be loaded here dynamically -->
+            <div class="col-md-4">
+                <div class="card car-card">
+                    <div class="card-img-top car-img" style="background-image: url('https://via.placeholder.com/300x200')"></div>
+                    <div class="card-body">
+                        <h5 class="card-title">Loading...</h5>
+                        <p class="card-text">Please wait while we load our cars...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about-section py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">About Us</h2>
+        <div class="row">
+            <div class="col-lg-6">
+                <p>We provide top-quality car rentals with exceptional service at competitive prices. Our mission is to make car rental easy, affordable, and enjoyable for all our customers.</p>
+                <p>With a wide range of vehicles from economy to luxury, we have the perfect car for your needs, whether it's a business trip, family vacation, or special occasion.</p>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Why Choose Us?</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="fas fa-check text-success"></i> Wide selection of quality vehicles</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success"></i> Transparent pricing with no hidden fees</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success"></i> Easy online booking system</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success"></i> Excellent customer service</li>
+                            <li class="list-group-item"><i class="fas fa-check text-success"></i> Flexible rental options</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="contact-section py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">Contact Us</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Send Us a Message</h5>
+                        <form id="contactForm">
+                            <div class="mb-3">
+                                <label for="nameInput" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="nameInput" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailInput" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="emailInput" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="messageInput" class="form-label">Message</label>
+                                <textarea class="form-control" id="messageInput" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Our Information</h5>
+                        <ul class="list-unstyled contact-info">
+                            <li class="mb-3"><i class="fas fa-map-marker-alt me-2"></i> 123 Car Street, Auto City, AC 12345</li>
+                            <li class="mb-3"><i class="fas fa-phone me-2"></i> (123) 456-7890</li>
+                            <li class="mb-3"><i class="fas fa-envelope me-2"></i> info@carbooking.com</li>
+                            <li class="mb-3"><i class="fas fa-clock me-2"></i> Monday-Friday: 9am-5pm</li>
+                        </ul>
+                        <div class="social-links mt-4">
+                            <a href="#" class="me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                            <a href="#" class="me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                            <a href="#" class="me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                            <a href="#"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="fas fa-car"></i> Car Booking System</h5>
+                <p>Your reliable partner for car rentals</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p>&copy; 2025 Car Booking System. All Rights Reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Login to Your Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="loginEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <div class="text-danger mb-3" id="loginError"></div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <p class="mb-0">Don't have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Register now</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create an Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label for="registerName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="registerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="registerEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPhone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="registerPhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="registerPassword" required>
+                    </div>
+                    <div class="text-danger mb-3" id="registerError"></div>
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <p class="mb-0">Already have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Car Details Modal -->
+<div class="modal fade" id="carModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="carModalTitle">Car Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="car-modal-img mb-3" id="carModalImg"></div>
+                        <div class="car-details">
+                            <h4 id="carBrandModel"></h4>
+                            <p><strong>Year:</strong> <span id="carYear"></span></p>
+                            <p><strong>Color:</strong> <span id="carColor"></span></p>
+                            <p><strong>Price per day:</strong> $<span id="carPrice"></span></p>
+                            <div class="car-features mb-3">
+                                <h5>Features:</h5>
+                                <ul id="carFeatures" class="list-group list-group-flush">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="booking-section">
+                            <h5>Book this Car</h5>
+                            <form id="bookingForm">
+                                <input type="hidden" id="carId">
+                                <div class="mb-3">
+                                    <label for="dateRange" class="form-label">Select Dates</label>
+                                    <input type="text" class="form-control" id="dateRange" placeholder="Select start and end dates" required>
+                                </div>
+                                <div class="mb-3">
+                                    <p>Available dates are shown in the calendar. Booked dates are disabled.</p>
+                                </div>
+                                <div class="mb-3">
+                                    <p><strong>Total Price:</strong> $<span id="totalPrice">0</span></p>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" id="bookBtn">Book Now</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bookings Modal -->
+<div class="modal fade" id="bookingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">My Bookings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Car</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Total Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                        <!-- Bookings will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noBookingsMessage" class="text-center py-3 d-none">
+                    <p>You have no bookings yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Success</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Flatpickr Date Picker -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- Custom JS -->
+<script src="js/app.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/booking.js"></script>
+</body>
+</html>

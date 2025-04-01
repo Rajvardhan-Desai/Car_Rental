@@ -1,0 +1,244 @@
+/* Global Styles */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2980b9;
+    --accent-color: #f39c12;
+    --text-color: #333;
+    --light-bg: #f8f9fa;
+    --dark-bg: #343a40;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center;
+    background-size: cover;
+    color: white;
+    padding: 120px 0;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.hero-content h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+/* Section Titles */
+.section-title {
+    position: relative;
+    margin-bottom: 40px;
+    font-weight: 700;
+    color: var(--dark-bg);
+}
+
+.section-title:after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    margin: 15px auto 0;
+}
+
+/* Car Cards */
+.car-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.car-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.car-img {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
+
+.car-price {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.car-features {
+    margin-top: 10px;
+}
+
+/* Car Modal */
+.car-modal-img {
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 4px;
+}
+
+.booking-section {
+    background-color: var(--light-bg);
+    padding: 20px;
+    border-radius: 4px;
+}
+
+/* Calendar Customization */
+.flatpickr-day.disabled {
+    color: #ccc;
+    text-decoration: line-through;
+}
+
+.flatpickr-day.booked {
+    background-color: #ffcccc;
+    border-color: #ffcccc;
+    color: #ff6666;
+}
+
+/* Admin Section */
+.admin-sidebar {
+    background-color: var(--dark-bg);
+    color: white;
+    min-height: 100vh;
+}
+
+.admin-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.2rem;
+    border-radius: 4px;
+}
+
+.admin-sidebar .nav-link:hover,
+.admin-sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.admin-sidebar .nav-link i {
+    margin-right: 10px;
+}
+
+.dashboard-card {
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-card .card-title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dashboard-card .card-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.dashboard-card .card-icon {
+    font-size: 2.5rem;
+    opacity: 0.2;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+/* Notification Counter */
+.notification-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+    .hero-section {
+        padding: 80px 0;
+    }
+
+    .hero-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .car-modal-img {
+        height: 200px;
+    }
+}
+
+/* Status Badges */
+.badge-pending {
+    background-color: #f39c12;
+}
+
+.badge-approved {
+    background-color: #2ecc71;
+}
+
+.badge-cancelled {
+    background-color: #e74c3c;
+}
+
+/* Contact Form */
+.contact-info i {
+    color: var(--primary-color);
+}
+
+.social-links a {
+    color: var(--dark-bg);
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--primary-color);
+}
+
+/* Loading Spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
