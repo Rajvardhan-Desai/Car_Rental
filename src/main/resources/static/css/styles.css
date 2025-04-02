@@ -102,11 +102,16 @@ body {
 }
 
 .flatpickr-day.booked {
-    background-color: #ffcccc;
-    border-color: #ffcccc;
-    color: #ff6666;
+    background-color: #ffcccc; /* Light red background */
+    border: 1px solid #ff6c37; /* Orange border */
+    color: #ff6c37; /* Orange text */
+    font-weight: bold; /* Make it stand out */
+    cursor: not-allowed; /* Indicate it's not selectable */
 }
 
+.flatpickr-day.booked:hover {
+    background-color: #ffb3b3; /* Slightly darker on hover for feedback */
+}
 /* Admin Section */
 .admin-sidebar {
     background-color: var(--dark-bg);

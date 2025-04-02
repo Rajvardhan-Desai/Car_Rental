@@ -7,6 +7,7 @@ let bookings = [];
 let currentBookingTab = 'pending';
 let monthlyRevenueChart = null;
 let carUsageChart = null;
+let currentActiveTab = 'dashboard';
 
 // DOM Elements
 const dashboardTab = document.getElementById('dashboardTab');
@@ -23,14 +24,9 @@ const pendingCounter = document.getElementById('pendingCounter');
 
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if admin is logged in
-    checkAdminAuth();
-
-    // Set up event listeners
+    //checkAdminAuth();
     setupEventListeners();
-
-    // Load dashboard data
-    loadDashboardData();
+    switchTab('dashboard'); // Unified initial load
 });
 
 // Check if admin is logged in
@@ -42,57 +38,28 @@ function checkAdminAuth() {
             currentAdmin = parsedUser;
             adminName.textContent = currentAdmin.name;
         } else {
-            // Redirect to home if not admin
             window.location.href = '../index.html';
         }
     } else {
-        // Redirect to home if not logged in
         window.location.href = '../index.html';
     }
 }
 
 // Setup all event listeners
 function setupEventListeners() {
-    // Tab navigation
-    dashboardTab.addEventListener('click', function(e) {
-        e.preventDefault();
-        showTab('dashboard');
-    });
-
-    bookingsTab.addEventListener('click', function(e) {
-        e.preventDefault();
-        showTab('bookings');
-        loadBookings();
-    });
-
-    carsTab.addEventListener('click', function(e) {
-        e.preventDefault();
-        showTab('cars');
-        loadCars();
-    });
-
-    usersTab.addEventListener('click', function(e) {
-        e.preventDefault();
-        showTab('users');
-        loadUsers();
-    });
-
-    // Booking tabs
+    // Booking sub-tabs
     document.getElementById('pendingBookingsTab').addEventListener('click', function(e) {
         e.preventDefault();
         setBookingTab('pending');
     });
-
     document.getElementById('approvedBookingsTab').addEventListener('click', function(e) {
         e.preventDefault();
         setBookingTab('approved');
     });
-
     document.getElementById('cancelledBookingsTab').addEventListener('click', function(e) {
         e.preventDefault();
         setBookingTab('cancelled');
     });
-
     document.getElementById('allBookingsTab').addEventListener('click', function(e) {
         e.preventDefault();
         setBookingTab('all');
@@ -109,37 +76,65 @@ function setupEventListeners() {
         e.preventDefault();
         saveCarForm();
     });
+
+    // Main tab navigation (updated selector)
+    document.querySelectorAll('.admin-sidebar .nav-link').forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabName = this.id.replace('Tab', '');
+            switchTab(tabName);
+        });
+    });
+}
+// Switch to the selected tab and load data
+function switchTab(tabName) {
+    // Remove active class from previous tab
+    document.getElementById(`${currentActiveTab}Tab`).classList.remove('active');
+
+    // Add active class to new tab
+    document.getElementById(`${tabName}Tab`).classList.add('active');
+
+    // Show/hide corresponding content
+    showTab(tabName);
+
+    // Update current active tab
+    currentActiveTab = tabName;
+
+    // Load data for the tab
+    switch(tabName) {
+        case 'dashboard':
+            loadDashboardData();
+            break;
+        case 'bookings':
+            loadBookings();
+            break;
+        case 'cars':
+            loadCars();
+            break;
+        case 'users':
+            loadUsers();
+            break;
+    }
 }
 
-// Show the selected tab
+// Show the selected tab content
 function showTab(tabName) {
-    // Reset all tabs
-    dashboardTab.classList.remove('active');
-    bookingsTab.classList.remove('active');
-    carsTab.classList.remove('active');
-    usersTab.classList.remove('active');
-
     dashboardContent.classList.add('d-none');
     bookingsContent.classList.add('d-none');
     carsContent.classList.add('d-none');
     usersContent.classList.add('d-none');
 
-    // Show selected tab
     switch (tabName) {
         case 'dashboard':
-            dashboardTab.classList.add('active');
             dashboardContent.classList.remove('d-none');
             break;
         case 'bookings':
-            bookingsTab.classList.add('active');
             bookingsContent.classList.remove('d-none');
             break;
         case 'cars':
-            carsTab.classList.add('active');
             carsContent.classList.remove('d-none');
             break;
         case 'users':
-            usersTab.classList.add('active');
             usersContent.classList.remove('d-none');
             break;
     }
@@ -147,13 +142,11 @@ function showTab(tabName) {
 
 // Set the booking tab
 function setBookingTab(tabName) {
-    // Reset all booking tabs
     document.getElementById('pendingBookingsTab').classList.remove('active');
     document.getElementById('approvedBookingsTab').classList.remove('active');
     document.getElementById('cancelledBookingsTab').classList.remove('active');
     document.getElementById('allBookingsTab').classList.remove('active');
 
-    // Set active tab
     document.getElementById(`${tabName}BookingsTab`).classList.add('active');
 
     currentBookingTab = tabName;
@@ -191,8 +184,8 @@ async function loadDashboardData() {
         if (!response.ok) {
             throw new Error('Failed to fetch dashboard data');
         }
-
         const data = await response.json();
+        console.log('Dashboard Data:', data);
 
         // Update dashboard numbers
         document.getElementById('totalCars').textContent = data.totalCars;
@@ -216,7 +209,6 @@ async function loadDashboardData() {
         // Load statistics charts
         loadMonthlyRevenueChart();
         loadCarUsageChart();
-
     } catch (error) {
         console.error('Error loading dashboard data:', error);
         alert('Failed to load dashboard data. Please try again.');
@@ -230,19 +222,12 @@ async function loadRecentBookings() {
         if (!response.ok) {
             throw new Error('Failed to fetch bookings');
         }
-
         const allBookings = await response.json();
-
-        // Sort by booking date (most recent first) and take first 5
         const recentBookings = allBookings
             .sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate))
             .slice(0, 5);
-
-        // Load users and cars data for display
         await loadUsersAndCars();
-
         displayRecentBookings(recentBookings);
-
     } catch (error) {
         console.error('Error loading recent bookings:', error);
         document.getElementById('recentBookingsTable').innerHTML = `
@@ -256,7 +241,6 @@ async function loadRecentBookings() {
 // Display recent bookings on dashboard
 function displayRecentBookings(recentBookings) {
     const tableBody = document.getElementById('recentBookingsTable');
-
     if (recentBookings.length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -265,15 +249,12 @@ function displayRecentBookings(recentBookings) {
         `;
         return;
     }
-
     let html = '';
-
     recentBookings.forEach(booking => {
         const user = users.find(u => u.id === booking.userId) || { name: 'Unknown' };
         const car = cars.find(c => c.id === booking.carId) || { brand: 'Unknown', model: 'Unknown' };
         const startDate = new Date(booking.startDate).toLocaleDateString();
         const endDate = new Date(booking.endDate).toLocaleDateString();
-
         let statusClass = '';
         switch (booking.status) {
             case 'PENDING':
@@ -288,7 +269,6 @@ function displayRecentBookings(recentBookings) {
             default:
                 statusClass = 'bg-secondary';
         }
-
         html += `
             <tr>
                 <td>${booking.id.substring(0, 8)}...</td>
@@ -300,7 +280,6 @@ function displayRecentBookings(recentBookings) {
             </tr>
         `;
     });
-
     tableBody.innerHTML = html;
 }
 
@@ -311,15 +290,9 @@ async function loadBookings() {
         if (!response.ok) {
             throw new Error('Failed to fetch bookings');
         }
-
         bookings = await response.json();
-
-        // Load users and cars data for display
         await loadUsersAndCars();
-
-        // Apply current filter
         filterBookings();
-
     } catch (error) {
         console.error('Error loading bookings:', error);
         document.getElementById('bookingsTable').innerHTML = `
@@ -333,7 +306,6 @@ async function loadBookings() {
 // Display bookings
 function displayBookings(filteredBookings) {
     const tableBody = document.getElementById('bookingsTable');
-
     if (filteredBookings.length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -342,15 +314,12 @@ function displayBookings(filteredBookings) {
         `;
         return;
     }
-
     let html = '';
-
     filteredBookings.forEach(booking => {
         const user = users.find(u => u.id === booking.userId) || { name: 'Unknown' };
         const car = cars.find(c => c.id === booking.carId) || { brand: 'Unknown', model: 'Unknown' };
         const startDate = new Date(booking.startDate).toLocaleDateString();
         const endDate = new Date(booking.endDate).toLocaleDateString();
-
         let statusClass = '';
         switch (booking.status) {
             case 'PENDING':
@@ -365,7 +334,6 @@ function displayBookings(filteredBookings) {
             default:
                 statusClass = 'bg-secondary';
         }
-
         html += `
             <tr>
                 <td>${booking.id.substring(0, 8)}...</td>
@@ -391,7 +359,6 @@ function displayBookings(filteredBookings) {
             </tr>
         `;
     });
-
     tableBody.innerHTML = html;
 
     // Add event listeners to buttons
@@ -401,17 +368,16 @@ function displayBookings(filteredBookings) {
             approveBooking(bookingId);
         });
     });
-
     document.querySelectorAll('.cancel-booking-btn').forEach(button => {
         button.addEventListener('click', function() {
             const bookingId = this.getAttribute('data-booking-id');
             cancelBooking(bookingId);
         });
     });
-
     document.querySelectorAll('.view-booking-btn').forEach(button => {
         button.addEventListener('click', function() {
             const bookingId = this.getAttribute('data-booking-id');
+            console.log('Viewing booking:', bookingId);
             viewBooking(bookingId);
         });
     });
@@ -422,22 +388,16 @@ async function approveBooking(bookingId) {
     if (!confirm('Are you sure you want to approve this booking?')) {
         return;
     }
-
     try {
         const response = await fetch(`${API_URL}/admin/bookings/${bookingId}/approve`, {
             method: 'PUT'
         });
-
         if (!response.ok) {
             throw new Error('Failed to approve booking');
         }
-
-        // Reload bookings and dashboard
         loadBookings();
         loadDashboardData();
-
         alert('Booking approved successfully!');
-
     } catch (error) {
         console.error('Error approving booking:', error);
         alert('Failed to approve booking. Please try again.');
@@ -449,22 +409,16 @@ async function cancelBooking(bookingId) {
     if (!confirm('Are you sure you want to cancel this booking?')) {
         return;
     }
-
     try {
         const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel`, {
             method: 'PUT'
         });
-
         if (!response.ok) {
             throw new Error('Failed to cancel booking');
         }
-
-        // Reload bookings and dashboard
         loadBookings();
         loadDashboardData();
-
         alert('Booking cancelled successfully!');
-
     } catch (error) {
         console.error('Error cancelling booking:', error);
         alert('Failed to cancel booking. Please try again.');
@@ -475,20 +429,12 @@ async function cancelBooking(bookingId) {
 function viewBooking(bookingId) {
     const booking = bookings.find(b => b.id === bookingId);
     if (!booking) return;
+    console.log('Booking details:', booking);
 
-    const user = users.find(u => u.id === booking.userId) || { name: 'Unknown', email: 'Unknown', phone: 'Unknown' };
-    const car = cars.find(c => c.id === booking.carId) || { brand: 'Unknown', model: 'Unknown', year: 'Unknown', color: 'Unknown' };
-
-    const startDate = new Date(booking.startDate).toLocaleDateString();
-    const endDate = new Date(booking.endDate).toLocaleDateString();
-    const bookingDate = new Date(booking.bookingDate).toLocaleDateString();
-
-    // Populate booking information
     document.getElementById('bookingDetailId').textContent = booking.id;
-    document.getElementById('bookingDetailStartDate').textContent = startDate;
-    document.getElementById('bookingDetailEndDate').textContent = endDate;
+    document.getElementById('bookingDetailStartDate').textContent = new Date(booking.startDate).toLocaleDateString();
+    document.getElementById('bookingDetailEndDate').textContent = new Date(booking.endDate).toLocaleDateString();
     document.getElementById('bookingDetailPrice').textContent = '$' + booking.totalPrice.toFixed(2);
-
     let statusBadge = '';
     switch (booking.status) {
         case 'PENDING':
@@ -503,42 +449,32 @@ function viewBooking(bookingId) {
         default:
             statusBadge = '<span class="badge bg-secondary">UNKNOWN</span>';
     }
-
     document.getElementById('bookingDetailStatus').innerHTML = statusBadge;
-    document.getElementById('bookingDetailBookingDate').textContent = bookingDate;
+    document.getElementById('bookingDetailBookingDate').textContent = new Date(booking.bookingDate).toLocaleDateString();
 
-    // Populate user information
+    const user = users.find(u => u.id === booking.userId) || { name: 'Unknown', email: 'Unknown', phone: 'Unknown' };
+    const car = cars.find(c => c.id === booking.carId) || { brand: 'Unknown', model: 'Unknown', year: 'Unknown', color: 'Unknown' };
+
     document.getElementById('bookingDetailUserName').textContent = user.name;
     document.getElementById('bookingDetailUserEmail').textContent = user.email;
     document.getElementById('bookingDetailUserPhone').textContent = user.phone || 'N/A';
-
-    // Populate car information
     document.getElementById('bookingDetailCarBrand').textContent = car.brand;
     document.getElementById('bookingDetailCarModel').textContent = car.model;
     document.getElementById('bookingDetailCarYear').textContent = car.year;
     document.getElementById('bookingDetailCarColor').textContent = car.color;
 
-    // Show/hide action buttons based on booking status
     const actionsDiv = document.getElementById('bookingDetailActions');
     const approveBtn = document.getElementById('bookingDetailApproveBtn');
     const cancelBtn = document.getElementById('bookingDetailCancelBtn');
 
     if (booking.status === 'PENDING') {
         actionsDiv.style.display = 'block';
-
-        // Set up action buttons
-        approveBtn.onclick = () => {
-            approveBookingFromModal(booking.id);
-        };
-
-        cancelBtn.onclick = () => {
-            cancelBookingFromModal(booking.id);
-        };
+        approveBtn.onclick = () => approveBookingFromModal(booking.id);
+        cancelBtn.onclick = () => cancelBookingFromModal(booking.id);
     } else {
         actionsDiv.style.display = 'none';
     }
 
-    // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('viewBookingModal'));
     modal.show();
 }
@@ -548,26 +484,18 @@ async function approveBookingFromModal(bookingId) {
     if (!confirm('Are you sure you want to approve this booking?')) {
         return;
     }
-
     try {
         const response = await fetch(`${API_URL}/admin/bookings/${bookingId}/approve`, {
             method: 'PUT'
         });
-
         if (!response.ok) {
             throw new Error('Failed to approve booking');
         }
-
-        // Close the modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('viewBookingModal'));
         modal.hide();
-
-        // Reload bookings and dashboard
         loadBookings();
         loadDashboardData();
-
         alert('Booking approved successfully!');
-
     } catch (error) {
         console.error('Error approving booking:', error);
         alert('Failed to approve booking. Please try again.');
@@ -579,26 +507,18 @@ async function cancelBookingFromModal(bookingId) {
     if (!confirm('Are you sure you want to cancel this booking?')) {
         return;
     }
-
     try {
         const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel`, {
             method: 'PUT'
         });
-
         if (!response.ok) {
             throw new Error('Failed to cancel booking');
         }
-
-        // Close the modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('viewBookingModal'));
         modal.hide();
-
-        // Reload bookings and dashboard
         loadBookings();
         loadDashboardData();
-
         alert('Booking cancelled successfully!');
-
     } catch (error) {
         console.error('Error cancelling booking:', error);
         alert('Failed to cancel booking. Please try again.');
@@ -612,10 +532,8 @@ async function loadCars() {
         if (!response.ok) {
             throw new Error('Failed to fetch cars');
         }
-
         cars = await response.json();
         displayCars(cars);
-
     } catch (error) {
         console.error('Error loading cars:', error);
         document.getElementById('carsTable').innerHTML = `
@@ -629,7 +547,6 @@ async function loadCars() {
 // Display cars
 function displayCars(carsToDisplay) {
     const tableBody = document.getElementById('carsTable');
-
     if (carsToDisplay.length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -638,39 +555,24 @@ function displayCars(carsToDisplay) {
         `;
         return;
     }
-
     let html = '';
-
     carsToDisplay.forEach(car => {
         html += `
             <tr>
                 <td>${car.id.substring(0, 8)}...</td>
-                <td>
-                    <img src="${car.imageUrl || 'https://via.placeholder.com/50x30?text=Car'}"
-                         alt="${car.brand} ${car.model}" width="50" height="30"
-                         style="object-fit: cover; border-radius: 4px;">
-                </td>
+                <td><img src="${car.imageUrl || 'https://via.placeholder.com/50x30?text=Car'}" alt="${car.brand} ${car.model}" width="50" height="30" style="object-fit: cover; border-radius: 4px;"></td>
                 <td>${car.brand}</td>
                 <td>${car.model}</td>
                 <td>${car.year}</td>
                 <td>$${car.pricePerDay.toFixed(2)}</td>
+                <td><span class="badge ${car.available ? 'bg-success' : 'bg-danger'}">${car.available ? 'Yes' : 'No'}</span></td>
                 <td>
-                    <span class="badge ${car.available ? 'bg-success' : 'bg-danger'}">
-                        ${car.available ? 'Yes' : 'No'}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-primary me-1 edit-car-btn" data-car-id="${car.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger delete-car-btn" data-car-id="${car.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <button class="btn btn-sm btn-primary me-1 edit-car-btn" data-car-id="${car.id}"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger delete-car-btn" data-car-id="${car.id}"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         `;
     });
-
     tableBody.innerHTML = html;
 
     // Add event listeners to buttons
@@ -680,7 +582,6 @@ function displayCars(carsToDisplay) {
             openCarFormModal(carId);
         });
     });
-
     document.querySelectorAll('.delete-car-btn').forEach(button => {
         button.addEventListener('click', function() {
             const carId = this.getAttribute('data-car-id');
@@ -697,19 +598,14 @@ function openCarFormModal(carId = null) {
     const submitButton = document.getElementById('carFormSubmit');
     const errorElement = document.getElementById('carFormError');
 
-    // Reset the form
     form.reset();
     errorElement.textContent = '';
 
     if (carId) {
-        // Edit mode
         titleElement.textContent = 'Edit Car';
         submitButton.textContent = 'Update Car';
-
         const car = cars.find(c => c.id === carId);
         if (!car) return;
-
-        // Populate form fields
         document.getElementById('carFormId').value = car.id;
         document.getElementById('carFormBrand').value = car.brand;
         document.getElementById('carFormModel').value = car.model;
@@ -719,14 +615,11 @@ function openCarFormModal(carId = null) {
         document.getElementById('carFormImage').value = car.imageUrl || '';
         document.getElementById('carFormFeatures').value = car.features ? car.features.join(', ') : '';
         document.getElementById('carFormAvailable').checked = car.available;
-
     } else {
-        // Add mode
         titleElement.textContent = 'Add New Car';
         submitButton.textContent = 'Add Car';
         document.getElementById('carFormId').value = '';
     }
-
     modal.show();
 }
 
@@ -742,12 +635,8 @@ async function saveCarForm() {
     const featuresStr = document.getElementById('carFormFeatures').value;
     const available = document.getElementById('carFormAvailable').checked;
 
-    // Parse features
-    const features = featuresStr.split(',')
-                               .map(feature => feature.trim())
-                               .filter(feature => feature);
+    const features = featuresStr.split(',').map(feature => feature.trim()).filter(feature => feature);
 
-    // Create car object
     const car = {
         brand,
         model,
@@ -759,7 +648,6 @@ async function saveCarForm() {
         available
     };
 
-    // If editing, add ID
     if (carId) {
         car.id = carId;
     }
@@ -767,7 +655,6 @@ async function saveCarForm() {
     try {
         const url = carId ? `${API_URL}/cars/${carId}` : `${API_URL}/cars`;
         const method = carId ? 'PUT' : 'POST';
-
         const response = await fetch(url, {
             method: method,
             headers: {
@@ -775,20 +662,14 @@ async function saveCarForm() {
             },
             body: JSON.stringify(car)
         });
-
         if (!response.ok) {
             throw new Error('Failed to save car');
         }
-
-        // Close modal and reload cars
         const modal = bootstrap.Modal.getInstance(document.getElementById('carFormModal'));
         modal.hide();
-
         loadCars();
         loadDashboardData();
-
         alert(`Car ${carId ? 'updated' : 'added'} successfully!`);
-
     } catch (error) {
         console.error('Error saving car:', error);
         document.getElementById('carFormError').textContent = error.message;
@@ -800,22 +681,16 @@ async function deleteCar(carId) {
     if (!confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
         return;
     }
-
     try {
         const response = await fetch(`${API_URL}/cars/${carId}`, {
             method: 'DELETE'
         });
-
         if (!response.ok) {
             throw new Error('Failed to delete car');
         }
-
-        // Reload cars and dashboard
         loadCars();
         loadDashboardData();
-
         alert('Car deleted successfully!');
-
     } catch (error) {
         console.error('Error deleting car:', error);
         alert('Failed to delete car. Please try again.');
@@ -829,10 +704,8 @@ async function loadUsers() {
         if (!response.ok) {
             throw new Error('Failed to fetch users');
         }
-
         users = await response.json();
         displayUsers(users);
-
     } catch (error) {
         console.error('Error loading users:', error);
         document.getElementById('usersTable').innerHTML = `
@@ -846,7 +719,6 @@ async function loadUsers() {
 // Display users
 function displayUsers(usersToDisplay) {
     const tableBody = document.getElementById('usersTable');
-
     if (usersToDisplay.length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -855,9 +727,7 @@ function displayUsers(usersToDisplay) {
         `;
         return;
     }
-
     let html = '';
-
     usersToDisplay.forEach(user => {
         html += `
             <tr>
@@ -865,20 +735,13 @@ function displayUsers(usersToDisplay) {
                 <td>${user.name}</td>
                 <td>${user.email}</td>
                 <td>${user.phone || 'N/A'}</td>
+                <td><span class="badge ${user.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}">${user.role}</span></td>
                 <td>
-                    <span class="badge ${user.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}">
-                        ${user.role}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-info view-user-btn" data-user-id="${user.id}">
-                        <i class="fas fa-eye"></i>
-                    </button>
+                    <button class="btn btn-sm btn-info view-user-btn" data-user-id="${user.id}"><i class="fas fa-eye"></i></button>
                 </td>
             </tr>
         `;
     });
-
     tableBody.innerHTML = html;
 
     // Add event listeners to buttons
@@ -894,30 +757,15 @@ function displayUsers(usersToDisplay) {
 function viewUser(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) return;
-
-    // Get user bookings
-    const userBookings = bookings.filter(b => b.userId === userId);
-
-    // Populate user information
     document.getElementById('userDetailId').textContent = user.id;
     document.getElementById('userDetailName').textContent = user.name;
     document.getElementById('userDetailEmail').textContent = user.email;
     document.getElementById('userDetailPhone').textContent = user.phone || 'N/A';
-
-    let roleBadge = '';
-    if (user.role === 'ADMIN') {
-        roleBadge = '<span class="badge bg-danger">ADMIN</span>';
-    } else {
-        roleBadge = '<span class="badge bg-primary">USER</span>';
-    }
-    document.getElementById('userDetailRole').innerHTML = roleBadge;
-
-    // Set current role in select
+    document.getElementById('userDetailRole').innerHTML = `<span class="badge ${user.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}">${user.role}</span>`;
     document.getElementById('userRoleSelect').value = user.role;
 
-    // Populate user bookings
+    const userBookings = bookings.filter(b => b.userId === userId);
     const bookingsTableBody = document.getElementById('userDetailBookings');
-
     if (userBookings.length === 0) {
         bookingsTableBody.innerHTML = `
             <tr>
@@ -926,12 +774,10 @@ function viewUser(userId) {
         `;
     } else {
         let bookingsHTML = '';
-
         userBookings.forEach(booking => {
             const car = cars.find(c => c.id === booking.carId) || { brand: 'Unknown', model: 'Unknown' };
             const startDate = new Date(booking.startDate).toLocaleDateString();
             const endDate = new Date(booking.endDate).toLocaleDateString();
-
             let statusBadge = '';
             switch (booking.status) {
                 case 'PENDING':
@@ -946,7 +792,6 @@ function viewUser(userId) {
                 default:
                     statusBadge = '<span class="badge bg-secondary">UNKNOWN</span>';
             }
-
             bookingsHTML += `
                 <tr>
                     <td>${car.brand} ${car.model}</td>
@@ -955,16 +800,10 @@ function viewUser(userId) {
                 </tr>
             `;
         });
-
         bookingsTableBody.innerHTML = bookingsHTML;
     }
 
-    // Set up update role button
-    document.getElementById('updateUserRoleBtn').onclick = () => {
-        updateUserRole(user.id);
-    };
-
-    // Show the modal
+    document.getElementById('updateUserRoleBtn').onclick = () => updateUserRole(user.id);
     const modal = new bootstrap.Modal(document.getElementById('viewUserModal'));
     modal.show();
 }
@@ -972,11 +811,9 @@ function viewUser(userId) {
 // Update user role
 async function updateUserRole(userId) {
     const newRole = document.getElementById('userRoleSelect').value;
-
     if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
         return;
     }
-
     try {
         const response = await fetch(`${API_URL}/admin/users/${userId}/role`, {
             method: 'PUT',
@@ -985,20 +822,13 @@ async function updateUserRole(userId) {
             },
             body: JSON.stringify({ role: newRole })
         });
-
         if (!response.ok) {
             throw new Error('Failed to update user role');
         }
-
-        // Close the modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('viewUserModal'));
         modal.hide();
-
-        // Reload users
         loadUsers();
-
         alert('User role updated successfully!');
-
     } catch (error) {
         console.error('Error updating user role:', error);
         alert('Failed to update user role. Please try again.');
@@ -1008,15 +838,12 @@ async function updateUserRole(userId) {
 // Load users and cars for booking display
 async function loadUsersAndCars() {
     try {
-        // Load users if not already loaded
         if (users.length === 0) {
             const usersResponse = await fetch(`${API_URL}/users`);
             if (usersResponse.ok) {
                 users = await usersResponse.json();
             }
         }
-
-        // Load cars if not already loaded
         if (cars.length === 0) {
             const carsResponse = await fetch(`${API_URL}/cars`);
             if (carsResponse.ok) {
@@ -1032,27 +859,18 @@ async function loadUsersAndCars() {
 async function loadMonthlyRevenueChart() {
     try {
         const response = await fetch(`${API_URL}/admin/statistics/monthly-revenue`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch monthly revenue data');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch monthly revenue data');
         const data = await response.json();
-
+        console.log('Monthly Revenue Data:', data);
         if (data.length === 0) {
             document.getElementById('monthlyRevenueChart').innerHTML = 'No revenue data available.';
             return;
         }
-
-        // Format data for chart
         const chartLabels = data.map(item => item.month);
         const chartData = data.map(item => item.revenue);
-
-        // Destroy existing chart if it exists
         if (monthlyRevenueChart) {
             monthlyRevenueChart.destroy();
         }
-
-        // Create new chart
         const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
         monthlyRevenueChart = new Chart(ctx, {
             type: 'bar',
@@ -1073,7 +891,7 @@ async function loadMonthlyRevenueChart() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return ' + value;
+                                return '$' + value;
                             }
                         }
                     }
@@ -1082,7 +900,7 @@ async function loadMonthlyRevenueChart() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return 'Revenue:  + context.raw.toFixed(2);
+                                return 'Revenue: $' + context.raw.toFixed(2);
                             }
                         }
                     }
@@ -1099,28 +917,19 @@ async function loadMonthlyRevenueChart() {
 async function loadCarUsageChart() {
     try {
         const response = await fetch(`${API_URL}/admin/statistics/car-usage`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch car usage data');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch car usage data');
         const data = await response.json();
-
+        console.log('Car Usage Data:', data);
         if (data.length === 0) {
             document.getElementById('carUsageChart').innerHTML = 'No car usage data available.';
             return;
         }
-
-        // Format data for chart
         const chartLabels = data.map(item => `${item.brand} ${item.model}`);
         const bookingsData = data.map(item => item.bookingsCount);
         const revenueData = data.map(item => item.revenue);
-
-        // Destroy existing chart if it exists
         if (carUsageChart) {
             carUsageChart.destroy();
         }
-
-        // Create new chart
         const ctx = document.getElementById('carUsageChart').getContext('2d');
         carUsageChart = new Chart(ctx, {
             type: 'bar',
@@ -1170,7 +979,7 @@ async function loadCarUsageChart() {
                         },
                         ticks: {
                             callback: function(value) {
-                                return ' + value;
+                                return '$' + value;
                             }
                         }
                     }
@@ -1181,7 +990,7 @@ async function loadCarUsageChart() {
                             label: function(context) {
                                 const label = context.dataset.label || '';
                                 if (label === 'Revenue') {
-                                    return label + ':  + context.raw.toFixed(2);
+                                    return label + ': $' + context.raw.toFixed(2);
                                 }
                                 return label + ': ' + context.raw;
                             }
