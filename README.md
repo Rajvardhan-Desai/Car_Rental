@@ -1,4 +1,4 @@
-# Five Star Car Rental Service 
+# Five Star Car Rental Service
 
 A web-based car rental management system built with Spring Boot and MongoDB.
 
@@ -11,7 +11,8 @@ A web-based car rental management system built with Spring Boot and MongoDB.
 - RESTful API for client applications
 
 ## Technology Stack
-- **Frontend**: HTML,CSS,JavaScript
+
+- **Frontend**: HTML, CSS, JavaScript
 - **Backend**: Spring Boot 3.4.4
 - **Database**: MongoDB Atlas
 - **Security**: Spring Security
@@ -25,85 +26,88 @@ A web-based car rental management system built with Spring Boot and MongoDB.
 
 ## Setup and Installation
 
-# Method 1 : Command Line
-1. Clone the repository
+### Method 1: Command Line
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/Rajvardhan-Desai/Car_Rental.git
    cd Car_Rental
    ```
-2. Configure database connection
-   - Create a .env file in the project root with:
-   ```bash
-   DB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/CarRental
-   DB_NAME=CarRental
-   ```
-   - Ensure your application.properties includes:
-     ```properties
-      spring.config.import=optional:file:.env[.properties]
+
+2. **Configure database connection**
+   - Create a `.env` file in the project root with:
+     ```bash
+     DB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/CarRental
+     DB_NAME=CarRental
      ```
-3. Build the project
+   - Ensure your `application.properties` includes:
+     ```properties
+     spring.config.import=optional:file:.env[.properties]
+     ```
+
+3. **Build the project**
    ```bash
-       mvn clean install
-    ```
-4. Run the application
-   ```bash
-     mvn spring-boot:run
+   mvn clean install
    ```
-   
-5. Access the applicationAccess the application
-  - Open your browser and navigate to `http://localhost:8080`
 
-# Method 2: Using IntelliJ IDEA
+4. **Run the application**
+   ```bash
+   mvn spring-boot:run
+   ```
 
-Clone the repository
-```bash
-git clone https://github.com/Rajvardhan-Desai/Car_Rental.git
-```
+5. **Access the application**
+   - Open your browser and navigate to `http://localhost:8080`
 
-Open the project in IntelliJ IDEA
-1. Select "File" > "Open"
-2. Navigate to the cloned repository folder
-3. Select the pom.xml file and click "Open as Project"
+### Method 2: Using IntelliJ IDEA
 
-Configure database connection
-1. Create a .env file in the project root with:
-```
-DB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/CarRental
-DB_NAME=CarRental
-```
-2. Ensure your application.properties includes:
-```
-spring.config.import=optional:file:.env[.properties]
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Rajvardhan-Desai/Car_Rental.git
+   ```
 
-Build the project
-1. Navigate to the Maven tab (usually on the right side)
-2. Run "clean" and then "install"
-3. Alternatively, use the Maven toolbar buttons
+2. **Open the project in IntelliJ IDEA**
+   - Select "File" > "Open"
+   - Navigate to the cloned repository folder
+   - Select the `pom.xml` file and click "Open as Project"
 
-Run the application
-1. Locate the main class FiveStarCarRentalWebApplication
-2. Right-click on it and select "Run"
-3. Or use the green "play" button in the toolbar after selecting the main class
+3. **Configure database connection**
+   - Create a `.env` file in the project root with:
+     ```
+     DB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/CarRental
+     DB_NAME=CarRental
+     ```
+   - Ensure your `application.properties` includes:
+     ```
+     spring.config.import=optional:file:.env[.properties]
+     ```
 
-Access the application
-Open your browser and navigate to http://localhost:8080
+4. **Build the project**
+   - Navigate to the Maven tab (usually on the right side)
+   - Run "clean" and then "install"
+   - Alternatively, use the Maven toolbar buttons
 
+5. **Run the application**
+   - Locate the main class `FiveStarCarRentalWebApplication`
+   - Right-click on it and select "Run"
+   - Or use the green "play" button in the toolbar after selecting the main class
 
-# API Endpoints
+6. **Access the application**
+   - Open your browser and navigate to `http://localhost:8080`
 
-## Authentication
+## API Endpoints
+
+### Authentication
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - Register new user
 
-## Cars
+### Cars
 - `GET /api/cars` - Get all available cars
 - `GET /api/cars/{id}` - Get car details
 - `POST /api/cars` - Add new car (Admin)
 - `PUT /api/cars/{id}` - Update car details (Admin)
 - `DELETE /api/cars/{id}` - Remove car (Admin)
 
-## Bookings
+### Bookings
 - `GET /api/bookings` - Get user's bookings
 - `POST /api/bookings` - Create new booking
 - `GET /api/bookings/{id}` - Get booking details
