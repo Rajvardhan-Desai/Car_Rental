@@ -26,8 +26,11 @@ async function initDatePicker(carId, pricePerDay) {
             return typeof date === 'string' ? date : new Date(date);
         });
 
-        // Get current date
-        const today = new Date();
+        // Clear any existing validation errors
+        const dateRangeInput = document.getElementById('dateRange');
+        if (dateRangeInput) {
+            FormValidation.removeError(dateRangeInput);
+        }
 
         // Initialize flatpickr
         flatpickrInstance = flatpickr('#dateRange', {
@@ -35,8 +38,17 @@ async function initDatePicker(carId, pricePerDay) {
             minDate: 'today',
             dateFormat: 'Y-m-d',
             disable: disabledDates,
-            onClose: calculateTotalPrice,
-            onChange: calculateTotalPrice
+            onClose: function(selectedDates, dateStr, instance) {
+                calculateTotalPrice(selectedDates);
+                validateDateSelection(selectedDates);
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                calculateTotalPrice(selectedDates);
+                // Clear error on change to provide better user experience
+                if (dateRangeInput) {
+                    FormValidation.removeError(dateRangeInput);
+                }
+            }
         });
 
         // Reset the date selection
@@ -45,8 +57,50 @@ async function initDatePicker(carId, pricePerDay) {
 
     } catch (error) {
         console.error('Error initializing date picker:', error);
-        alert('Could not load availability. Please try again.');
+        showErrorNotification('Could not load availability. Please try again.');
     }
+}
+
+// Validate date selection
+function validateDateSelection(selectedDates) {
+    const dateRangeInput = document.getElementById('dateRange');
+
+    if (!dateRangeInput) return;
+
+    if (selectedDates.length === 0) {
+        FormValidation.showError(dateRangeInput, 'Please select booking dates');
+        return false;
+    }
+
+    // If only one date is selected
+    if (selectedDates.length === 1) {
+        // This is fine for a one-day booking, don't show error
+        return true;
+    }
+
+    // If two dates are selected, validate range
+    if (selectedDates.length === 2) {
+        const startDate = new Date(selectedDates[0]);
+        const endDate = new Date(selectedDates[1]);
+
+        // Calculate difference in milliseconds
+        const timeDiff = endDate.getTime() - startDate.getTime();
+
+        // If the end date is before the start date
+        if (timeDiff < 0) {
+            FormValidation.showError(dateRangeInput, 'End date cannot be before start date');
+            return false;
+        }
+
+        // If the booking is longer than 30 days (optional validation)
+        const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        if (dayDiff > 30) {
+            FormValidation.showError(dateRangeInput, 'Booking cannot exceed 30 days');
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // Calculate the total price based on selected dates
@@ -63,6 +117,9 @@ function calculateTotalPrice(selectedDates) {
 
         const totalPrice = dayDiff * carPricePerDay;
         totalPriceElement.textContent = totalPrice.toFixed(2);
+    } else if (selectedDates.length === 1) {
+        // If only one day is selected, charge for 1 day
+        totalPriceElement.textContent = carPricePerDay.toFixed(2);
     } else {
         totalPriceElement.textContent = '0';
     }
@@ -111,4 +168,32 @@ function parseDateRange(dateRangeStr) {
         };
     }
     return null;
+}
+
+// Show error notification
+function showErrorNotification(message) {
+    // Create a toast notification for error
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '1050';
+
+    const toastHTML = `
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <strong class="me-auto">Error</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+
+    toastContainer.innerHTML = toastHTML;
+    document.body.appendChild(toastContainer);
+
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        document.body.removeChild(toastContainer);
+    }, 5000);
 }

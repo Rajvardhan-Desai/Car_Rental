@@ -6,7 +6,42 @@ document.addEventListener('DOMContentLoaded', function() {
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            createBooking();
+            if (FormValidation.validateBookingForm(this)) {
+                createBooking();
+            }
+        });
+
+        // Add validation for date picker
+        const dateRange = document.getElementById('dateRange');
+        if (dateRange) {
+            dateRange.addEventListener('change', function() {
+                if (!this.value) {
+                    FormValidation.showError(this, 'Please select dates for your booking');
+                } else {
+                    const dates = this.value.split(' to ');
+                    if (dates.length === 2) {
+                        const startDate = dates[0];
+                        const endDate = dates[1];
+
+                        if (!FormValidation.isValidFutureDate(startDate)) {
+                            FormValidation.showError(this, 'Start date must be today or later');
+                        } else if (!FormValidation.isEndDateAfterStartDate(startDate, endDate)) {
+                            FormValidation.showError(this, 'End date must be after start date');
+                        } else {
+                            FormValidation.removeError(this);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // My Bookings Button
+    const myBookingsBtn = document.getElementById('myBookingsBtn');
+    if (myBookingsBtn) {
+        myBookingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadUserBookings();
         });
     }
 });
@@ -25,19 +60,27 @@ async function createBooking() {
     const dateRange = document.getElementById('dateRange').value;
 
     if (!dateRange) {
-        alert('Please select booking dates');
+        FormValidation.showError(document.getElementById('dateRange'), 'Please select dates for your booking');
         return;
     }
 
     const dates = parseDateRange(dateRange);
     if (!dates) {
-        alert('Invalid date range');
+        FormValidation.showError(document.getElementById('dateRange'), 'Invalid date range');
         return;
     }
 
     const totalPrice = parseFloat(document.getElementById('totalPrice').textContent);
 
     try {
+        // Validate availability again on the server side
+        const availabilityCheck = await checkDatesAvailability(carId, dates.startDate, dates.endDate);
+        if (!availabilityCheck) {
+            FormValidation.showError(document.getElementById('dateRange'), 'Selected dates are no longer available');
+            initDatePicker(carId, document.getElementById('carPrice').textContent); // Refresh calendar
+            return;
+        }
+
         // Create booking
         const response = await fetch(`${API_URL}/bookings`, {
             method: 'POST',
@@ -65,7 +108,11 @@ async function createBooking() {
         carModal.hide();
 
         // Show success message
-        showSuccessMessage('Booking created successfully! The booking is pending approval.');
+        showSuccessMessage('Booking created successfully! Your booking is pending approval.');
+
+        // Reset form
+        document.getElementById('dateRange').value = '';
+        document.getElementById('totalPrice').textContent = '0';
 
     } catch (error) {
         alert(error.message);
@@ -74,7 +121,12 @@ async function createBooking() {
 
 // Load user bookings
 async function loadUserBookings() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        // Show login modal
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+        return;
+    }
 
     try {
         const response = await fetch(`${API_URL}/bookings/user/${currentUser.id}`);
@@ -138,7 +190,7 @@ function displayUserBookings(bookings) {
                 <td>${car.brand} ${car.model}</td>
                 <td>${startDate}</td>
                 <td>${endDate}</td>
-                <td>$${booking.totalPrice.toFixed(2)}</td>
+                <td>${booking.totalPrice.toFixed(2)}</td>
                 <td><span class="badge ${statusClass}">${booking.status}</span></td>
                 <td>
                     ${booking.status === 'PENDING' ?

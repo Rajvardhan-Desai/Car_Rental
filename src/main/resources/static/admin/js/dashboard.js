@@ -24,8 +24,9 @@ const pendingCounter = document.getElementById('pendingCounter');
 
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    //checkAdminAuth();
+    checkAdminAuth();
     setupEventListeners();
+    setupInputValidation();
     switchTab('dashboard'); // Unified initial load
 });
 
@@ -74,7 +75,9 @@ function setupEventListeners() {
     // Car form
     document.getElementById('carForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        saveCarForm();
+        if (FormValidation.validateCarForm(this)) {
+            saveCarForm();
+        }
     });
 
     // Main tab navigation (updated selector)
@@ -86,6 +89,88 @@ function setupEventListeners() {
         });
     });
 }
+
+// Setup input validation for admin forms
+function setupInputValidation() {
+    // Car form validation
+    const carFormBrand = document.getElementById('carFormBrand');
+    const carFormModel = document.getElementById('carFormModel');
+    const carFormYear = document.getElementById('carFormYear');
+    const carFormColor = document.getElementById('carFormColor');
+    const carFormPrice = document.getElementById('carFormPrice');
+
+    if (carFormBrand) {
+        carFormBrand.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Brand is required');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    if (carFormModel) {
+        carFormModel.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Model is required');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    if (carFormYear) {
+        carFormYear.addEventListener('blur', function() {
+            const currentYear = new Date().getFullYear();
+            const yearValue = parseInt(this.value);
+
+            if (!this.value) {
+                FormValidation.showError(this, 'Year is required');
+            } else if (isNaN(yearValue) || yearValue < 1900 || yearValue > currentYear + 1) {
+                FormValidation.showError(this, `Year must be between 1900 and ${currentYear + 1}`);
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    if (carFormColor) {
+        carFormColor.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Color is required');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    if (carFormPrice) {
+        carFormPrice.addEventListener('blur', function() {
+            const priceValue = parseFloat(this.value);
+
+            if (!this.value) {
+                FormValidation.showError(this, 'Price is required');
+            } else if (isNaN(priceValue) || priceValue <= 0) {
+                FormValidation.showError(this, 'Price must be a positive number');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    // User role update validation
+    const userRoleSelect = document.getElementById('userRoleSelect');
+    if (userRoleSelect) {
+        userRoleSelect.addEventListener('change', function() {
+            if (!this.value || (this.value !== 'USER' && this.value !== 'ADMIN')) {
+                FormValidation.showError(this, 'Please select a valid role');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+}
+
 // Switch to the selected tab and load data
 function switchTab(tabName) {
     // Remove active class from previous tab
@@ -211,8 +296,64 @@ async function loadDashboardData() {
         loadCarUsageChart();
     } catch (error) {
         console.error('Error loading dashboard data:', error);
-        alert('Failed to load dashboard data. Please try again.');
+        showErrorMessage('Failed to load dashboard data. Please try again.');
     }
+}
+
+// Show error message
+function showErrorMessage(message) {
+    // Create a toast notification
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '1050';
+
+    const toastHTML = `
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <strong class="me-auto">Error</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+
+    toastContainer.innerHTML = toastHTML;
+    document.body.appendChild(toastContainer);
+
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        document.body.removeChild(toastContainer);
+    }, 5000);
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    // Create a toast notification
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '1050';
+
+    const toastHTML = `
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+
+    toastContainer.innerHTML = toastHTML;
+    document.body.appendChild(toastContainer);
+
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        document.body.removeChild(toastContainer);
+    }, 5000);
 }
 
 // Load recent bookings for dashboard
@@ -377,7 +518,6 @@ function displayBookings(filteredBookings) {
     document.querySelectorAll('.view-booking-btn').forEach(button => {
         button.addEventListener('click', function() {
             const bookingId = this.getAttribute('data-booking-id');
-            console.log('Viewing booking:', bookingId);
             viewBooking(bookingId);
         });
     });
@@ -397,10 +537,10 @@ async function approveBooking(bookingId) {
         }
         loadBookings();
         loadDashboardData();
-        alert('Booking approved successfully!');
+        showSuccessMessage('Booking approved successfully!');
     } catch (error) {
         console.error('Error approving booking:', error);
-        alert('Failed to approve booking. Please try again.');
+        showErrorMessage('Failed to approve booking. Please try again.');
     }
 }
 
@@ -418,10 +558,10 @@ async function cancelBooking(bookingId) {
         }
         loadBookings();
         loadDashboardData();
-        alert('Booking cancelled successfully!');
+        showSuccessMessage('Booking cancelled successfully!');
     } catch (error) {
         console.error('Error cancelling booking:', error);
-        alert('Failed to cancel booking. Please try again.');
+        showErrorMessage('Failed to cancel booking. Please try again.');
     }
 }
 
@@ -429,7 +569,6 @@ async function cancelBooking(bookingId) {
 function viewBooking(bookingId) {
     const booking = bookings.find(b => b.id === bookingId);
     if (!booking) return;
-    console.log('Booking details:', booking);
 
     document.getElementById('bookingDetailId').textContent = booking.id;
     document.getElementById('bookingDetailStartDate').textContent = new Date(booking.startDate).toLocaleDateString();
@@ -495,10 +634,10 @@ async function approveBookingFromModal(bookingId) {
         modal.hide();
         loadBookings();
         loadDashboardData();
-        alert('Booking approved successfully!');
+        showSuccessMessage('Booking approved successfully!');
     } catch (error) {
         console.error('Error approving booking:', error);
-        alert('Failed to approve booking. Please try again.');
+        showErrorMessage('Failed to approve booking. Please try again.');
     }
 }
 
@@ -518,10 +657,10 @@ async function cancelBookingFromModal(bookingId) {
         modal.hide();
         loadBookings();
         loadDashboardData();
-        alert('Booking cancelled successfully!');
+        showSuccessMessage('Booking cancelled successfully!');
     } catch (error) {
         console.error('Error cancelling booking:', error);
-        alert('Failed to cancel booking. Please try again.');
+        showErrorMessage('Failed to cancel booking. Please try again.');
     }
 }
 
@@ -601,6 +740,10 @@ function openCarFormModal(carId = null) {
     form.reset();
     errorElement.textContent = '';
 
+    // Clear all validation errors
+    form.querySelectorAll('.error-message').forEach(el => el.remove());
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
     if (carId) {
         titleElement.textContent = 'Edit Car';
         submitButton.textContent = 'Update Car';
@@ -669,7 +812,7 @@ async function saveCarForm() {
         modal.hide();
         loadCars();
         loadDashboardData();
-        alert(`Car ${carId ? 'updated' : 'added'} successfully!`);
+        showSuccessMessage(`Car ${carId ? 'updated' : 'added'} successfully!`);
     } catch (error) {
         console.error('Error saving car:', error);
         document.getElementById('carFormError').textContent = error.message;
@@ -690,10 +833,10 @@ async function deleteCar(carId) {
         }
         loadCars();
         loadDashboardData();
-        alert('Car deleted successfully!');
+        showSuccessMessage('Car deleted successfully!');
     } catch (error) {
         console.error('Error deleting car:', error);
-        alert('Failed to delete car. Please try again.');
+        showErrorMessage('Failed to delete car. Please try again.');
     }
 }
 
@@ -811,9 +954,15 @@ function viewUser(userId) {
 // Update user role
 async function updateUserRole(userId) {
     const newRole = document.getElementById('userRoleSelect').value;
+    if (!newRole || (newRole !== 'USER' && newRole !== 'ADMIN')) {
+        FormValidation.showError(document.getElementById('userRoleSelect'), 'Please select a valid role');
+        return;
+    }
+
     if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
         return;
     }
+
     try {
         const response = await fetch(`${API_URL}/admin/users/${userId}/role`, {
             method: 'PUT',
@@ -828,10 +977,10 @@ async function updateUserRole(userId) {
         const modal = bootstrap.Modal.getInstance(document.getElementById('viewUserModal'));
         modal.hide();
         loadUsers();
-        alert('User role updated successfully!');
+        showSuccessMessage('User role updated successfully!');
     } catch (error) {
         console.error('Error updating user role:', error);
-        alert('Failed to update user role. Please try again.');
+        showErrorMessage('Failed to update user role. Please try again.');
     }
 }
 
@@ -891,7 +1040,7 @@ async function loadMonthlyRevenueChart() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return ' ' + value;
                             }
                         }
                     }
@@ -900,7 +1049,7 @@ async function loadMonthlyRevenueChart() {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return 'Revenue: $' + context.raw.toFixed(2);
+                                return 'Revenue: ' + context.raw.toFixed(2);
                             }
                         }
                     }
@@ -979,7 +1128,7 @@ async function loadCarUsageChart() {
                         },
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return ' ' + value;
                             }
                         }
                     }
@@ -990,7 +1139,7 @@ async function loadCarUsageChart() {
                             label: function(context) {
                                 const label = context.dataset.label || '';
                                 if (label === 'Revenue') {
-                                    return label + ': $' + context.raw.toFixed(2);
+                                    return label + ': '+ context.raw.toFixed(2);
                                 }
                                 return label + ': ' + context.raw;
                             }

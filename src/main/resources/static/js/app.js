@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Event listeners
     setupEventListeners();
+
+    // Setup realtime validation
+    setupInputValidation();
 });
 
 // Check if user is logged in
@@ -58,7 +61,9 @@ function setupEventListeners() {
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            loginUser();
+            if (FormValidation.validateLoginForm(this)) {
+                loginUser();
+            }
         });
     }
 
@@ -66,7 +71,9 @@ function setupEventListeners() {
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            registerUser();
+            if (FormValidation.validateRegisterForm(this)) {
+                registerUser();
+            }
         });
     }
 
@@ -105,7 +112,116 @@ function setupEventListeners() {
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            handleContactForm();
+            if (FormValidation.validateContactForm(this)) {
+                handleContactForm();
+            }
+        });
+    }
+}
+
+// Setup realtime validation for input fields
+function setupInputValidation() {
+    // Login form input validation
+    if (loginForm) {
+        const loginEmail = document.getElementById('loginEmail');
+        loginEmail.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Email is required');
+            } else if (!FormValidation.isValidEmail(this.value)) {
+                FormValidation.showError(this, 'Please enter a valid email address');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+
+        const loginPassword = document.getElementById('loginPassword');
+        loginPassword.addEventListener('blur', function() {
+            if (!this.value) {
+                FormValidation.showError(this, 'Password is required');
+            } else if (!FormValidation.hasMinLength(this.value, 6)) {
+                FormValidation.showError(this, 'Password must be at least 6 characters');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    // Registration form input validation
+    if (registerForm) {
+        const registerName = document.getElementById('registerName');
+        registerName.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Name is required');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+
+        const registerEmail = document.getElementById('registerEmail');
+        registerEmail.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Email is required');
+            } else if (!FormValidation.isValidEmail(this.value)) {
+                FormValidation.showError(this, 'Please enter a valid email address');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+
+        const registerPhone = document.getElementById('registerPhone');
+        registerPhone.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Phone number is required');
+            } else if (!FormValidation.isValidPhone(this.value)) {
+                FormValidation.showError(this, 'Please enter a valid phone number');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+
+        const registerPassword = document.getElementById('registerPassword');
+        registerPassword.addEventListener('blur', function() {
+            if (!this.value) {
+                FormValidation.showError(this, 'Password is required');
+            } else if (!FormValidation.hasMinLength(this.value, 6)) {
+                FormValidation.showError(this, 'Password must be at least 6 characters');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+    }
+
+    // Contact form input validation
+    if (contactForm) {
+        const nameInput = document.getElementById('nameInput');
+        nameInput.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Name is required');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+
+        const emailInput = document.getElementById('emailInput');
+        emailInput.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Email is required');
+            } else if (!FormValidation.isValidEmail(this.value)) {
+                FormValidation.showError(this, 'Please enter a valid email address');
+            } else {
+                FormValidation.removeError(this);
+            }
+        });
+
+        const messageInput = document.getElementById('messageInput');
+        messageInput.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                FormValidation.showError(this, 'Message is required');
+            } else if (!FormValidation.hasMinLength(this.value, 10)) {
+                FormValidation.showError(this, 'Message must be at least 10 characters');
+            } else {
+                FormValidation.removeError(this);
+            }
         });
     }
 }
@@ -275,6 +391,7 @@ async function registerUser() {
     const email = document.getElementById('registerEmail').value;
     const phone = document.getElementById('registerPhone').value;
     const password = document.getElementById('registerPassword').value;
+    const role = "USER";
 
     try {
         const response = await fetch(`${API_URL}/users`, {
@@ -282,7 +399,7 @@ async function registerUser() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name, email, phone, password })
+            body: JSON.stringify({ name, email, phone, password,role })
         });
 
         if (!response.ok) {
